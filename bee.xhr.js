@@ -4,11 +4,11 @@
  * XMLHttpRequest handler for BeeJs
  *
  * Usage :
- *     var request = new Bee.Xhr; 
- *     request.send("http://example.com/ajax.php", {
+ *     var request = new Bee.Xhr("http://example.com/ajax.php", {
  *         type : "GET",
  *         async : true,
  *         timeout : 10000,
+ *         responseType : "json",
  *         onSucess : function(response){
  *             console.log('succes');
  *             console.log(response);
@@ -78,7 +78,7 @@ var Bee = Bee || {};
     };
 
     //Main XHR class
-    Xhr = function () {
+    Xhr = function (url, options) {
         this.request = undefined;
 
         //default options
@@ -90,6 +90,12 @@ var Bee = Bee || {};
             onSucess : function (responseText, request) {},
             onError : function (request, isTimedOut) {}
         };
+
+
+        if (url) {
+            this.send(url, options);
+        }
+
 
         return this;
     };
