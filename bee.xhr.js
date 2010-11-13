@@ -5,10 +5,10 @@
  *
  * Usage :
  *     var request = new Bee.Xhr("http://example.com/ajax.php", {
- *         type : "GET",
- *         async : true,
- *         timeout : 10000,
- *         responseType : "json",
+ *         type : "POST", //default is GET
+ *         async : true, //default is true, when set false, timeout will not work
+ *         timeout : 5000, //default is 10000
+ *         responseType : "json", //default is text
  *         onSucess : function(response){
  *             console.log('succes');
  *             console.log(response);
@@ -70,7 +70,12 @@ var Bee = Bee || {};
             return response.responseXML;
         }
         else if (responseType === "json") {
-            return eval('(' + response.responseText + ')'); 
+            try{
+                return eval('(' + response.responseText + ')'); 
+            }
+            catch(e){
+                throw "JSON parsing failed";
+            }
         }
         else { //text
             return response.responseText;
@@ -86,7 +91,7 @@ var Bee = Bee || {};
             type : "GET",
             async : true,
             responseType : "text",
-            timeout : 1000,
+            timeout : 10000, //10 seconds
             onSucess : function (responseText, request) {},
             onError : function (request, isTimedOut) {}
         };
@@ -127,7 +132,6 @@ var Bee = Bee || {};
         //set timeout for async request
         if (options.async && options.timeout > 0) {
             requestTimer = setTimeout(function () {
-                console.log('timedout');
                 timedOut = true;
                 that.abort();
             }, options.timeout);
