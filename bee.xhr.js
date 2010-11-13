@@ -37,10 +37,10 @@ var Bee = Bee || {};
         //if IE
         if (typeof XMLHttpRequest === "undefined") {
             XMLHttpRequest = function () {
-                return new ActiveXObject(
                 //IE 5 uses Msxml2.XMLHTTP
-                navigator.userAgent.indexOf("MSIE 5") >= 0 ?
-                "Microsoft.XMLHTTP" : "Msxml2.XMLHTTP"
+                var greaterThanIE5 = navigator.userAgent.indexOf("MSIE 5") > -1;
+                return new ActiveXObject(
+                    greaterThanIE5 ? "Microsoft.XMLHTTP" : "Msxml2.XMLHTTP"
                 );
             };
         }
@@ -53,7 +53,9 @@ var Bee = Bee || {};
     //merge 2 objects
     //TODO: this should not be in XHR module
     mergeObjects = function (obj1, obj2) {
-        var tmp = obj1, attr;
+        var tmp = obj1, 
+            attr;
+
         for (attr in obj2) {
             if (obj2.hasOwnProperty(attr)) {
                 tmp[attr] = obj2[attr];
