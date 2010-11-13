@@ -140,6 +140,8 @@ var Bee = Bee || {};
         //handle errors and success
         //on request completed
         onRequestComplete = function (request) {
+            clearTimeout(requestTimer);
+
             if (request.status === 200) {
                 var data = formatResponse(request, options.responseType);
                 options.onSucess(data, request);
@@ -148,7 +150,6 @@ var Bee = Bee || {};
                 options.onError(request, false);
             }
 
-            clearTimeout(requestTimer);
         };
 
         //listen ready state change events for async requests
