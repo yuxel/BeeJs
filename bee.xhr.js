@@ -33,10 +33,10 @@ var Bee = Bee || {};
        
     //get crossbrowser request object 
     RequestObject = (function () {
-        var XMLHttpRequest = XMLHttpRequest || undefined;
+        var crossBrowserXHR = XMLHttpRequest || undefined;
         //if IE
-        if (typeof XMLHttpRequest === "undefined") {
-            XMLHttpRequest = function () {
+        if (typeof crossBrowserXHR === "undefined") {
+            crossBrowserXHR = function () {
                 //IE 5 uses Msxml2.XMLHTTP
                 var greaterThanIE5 = navigator.userAgent.indexOf("MSIE 5") > -1;
                 return new ActiveXObject(
@@ -44,10 +44,10 @@ var Bee = Bee || {};
                 );
             };
         }
-        if (!XMLHttpRequest) {
+        if (!crossBrowserXHR) {
             throw "XMLHttpRequest not supported";
         }
-        return XMLHttpRequest;
+        return crossBrowserXHR;
     }());
 
     //merge 2 objects
@@ -137,11 +137,14 @@ var Bee = Bee || {};
         //on request completed
         onRequestComplete = function (request) {
             if (request.status === 200) {
-                options.onSucess(formatResponse(request), request);
+                var data = formatResponse(request, options.responseType);
+                options.onSucess(data, request);
             }
             else {
                 options.onError(request, false);
             }
+
+            clearTimeout(requestTimer);
         };
 
         //listen ready state change events for async requests
@@ -151,7 +154,6 @@ var Bee = Bee || {};
             }
             else if (request.readyState === 4 && !timedOut) {
                 onRequestComplete(request);
-                clearTimeout(requestTimer);
             }
         };
 
