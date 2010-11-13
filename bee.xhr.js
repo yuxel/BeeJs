@@ -1,4 +1,7 @@
-/*jslint white: true, browser: true, devel: true, windows: true, evil: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true */
+/*jslint white: true, browser: true, devel: true, 
+ windows: true, evil: true, onevar: true, undef: true, 
+ nomen: true, eqeqeq: true, plusplus: true, bitwise: true, 
+ regexp: true, newcap: true, immed: true */
 
 /**
  * XMLHttpRequest handler for BeeJs
@@ -6,7 +9,7 @@
  * Usage :
  *     var request = new Bee.Xhr("http://example.com/ajax.php", {
  *         type : "POST", //default is GET
- *         async : true, //default is true, when set false, timeout will not work
+ *         async : true, //when set false, timeout will not work
  *         timeout : 5000, //default is 10000
  *         responseType : "json", //default is text
  *         onSucess : function(response){
@@ -38,7 +41,10 @@ var Bee = Bee || {};
         if (typeof crossBrowserXHR === "undefined") {
             crossBrowserXHR = function () {
                 //IE 5 uses Msxml2.XMLHTTP
-                var greaterThanIE5 = navigator.userAgent.indexOf("MSIE 5") > -1;
+                var userAgent = navigator.userAgent,
+                    greaterThanIE5;
+
+                greaterThanIE5 = userAgent.indexOf("MSIE 5") > -1;
                 return new ActiveXObject(
                     greaterThanIE5 ? "Microsoft.XMLHTTP" : "Msxml2.XMLHTTP"
                 );
@@ -70,11 +76,12 @@ var Bee = Bee || {};
             return response.responseXML;
         }
         else if (responseType === "json") {
-            try{
+            try {
                 return eval('(' + response.responseText + ')'); 
             }
-            catch(e){
-                throw "JSON parsing failed";
+            catch (e) {
+                //if an error on eval, return response as text
+                return response.responseText;
             }
         }
         else { //text
