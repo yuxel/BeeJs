@@ -26,7 +26,7 @@
 
 var Bee = Bee || {};
 
-(function (Bee, undefined) {
+(function (Bee) {
 
     //define variables
     var RequestObject, //holds crossbrowser XMLHttpRequest object  
@@ -77,7 +77,9 @@ var Bee = Bee || {};
         }
         else if (responseType === "json") {
             try {
-                return eval('(' + response.responseText + ')'); 
+                var data = response.responseText;
+                //return eval('(' + data + ')'); 
+                return (new Function("return " + data))();
             }
             catch (e) {
                 //if an error on eval, return response as text
