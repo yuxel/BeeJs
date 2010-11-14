@@ -26,7 +26,7 @@
 
 var Bee = Bee || {};
 
-(function (Bee) {
+(function (Bee, undefined) {
 
     //define variables
     var RequestObject, //holds crossbrowser XMLHttpRequest object  
