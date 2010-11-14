@@ -11,6 +11,7 @@
  *         type : "POST", //default is GET
  *         async : true, //when set false, timeout will not work
  *         timeout : 5000, //default is 10000
+ *         data : {foo : "bar"},
  *         responseType : "json", //default is text
  *         onSucess : function(response){
  *             console.log('succes');
@@ -32,8 +33,11 @@ var Bee = Bee || {};
     var RequestObject, //holds crossbrowser XMLHttpRequest object  
         Xhr, // main class
         formatResponse, //function to format response
-        mergeObjects; //function to merge objects
-       
+        mergeObjects, //function to merge objects
+        serialize, //serialize an object {foo:'bar'} into foo&bar
+        urlEncodedContentType = "application/x-www-form-urlencoded";
+
+
     //get crossbrowser request object 
     RequestObject = (function () {
         var crossBrowserXHR = XMLHttpRequest || undefined;
@@ -70,6 +74,23 @@ var Bee = Bee || {};
         return tmp;
     };
 
+    //TODO: this should not be in XHR module too
+    serialize = function (obj) {
+        var serialized = [],
+            key;
+
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                //TODO: urlencode value part
+                serialized[serialized.length] = key + "=" + obj[key];
+            }
+        }
+
+        serialized = serialized.join("&");
+
+        return serialized;
+    };
+
     //format response text as text, xml and json
     formatResponse = function (response, responseType) {
         if (responseType === "xml") {
@@ -100,6 +121,7 @@ var Bee = Bee || {};
             type : "GET",
             async : true,
             responseType : "text",
+            data : undefined,
             timeout : 10000, //10 seconds
             onSucess : function (responseText, request) {},
             onError : function (request, isTimedOut) {}
@@ -129,6 +151,7 @@ var Bee = Bee || {};
             request, //alias for that.request
             requestTimer, //timer to handle timeout,
             onRequestComplete,
+            serializedData,
             timedOut  = false;
 
         //merged options from default options
@@ -136,8 +159,23 @@ var Bee = Bee || {};
 
         //init XMLHttpRequest
         that.request = request = new RequestObject();
+
+        if (options.data) {
+            serializedData = serialize(options.data);
+        }
+
+        if (options.data && options.type === "GET") {
+            //append serializedData data to url
+            url += (url.search("\\?") === -1 ? "?" : "&") + serializedData;
+        }
+
         request.open(options.type, url, options.async);
 
+        if (options.data && options.type === "POST") {
+            //set content type
+            request.setRequestHeader('Content-Type', urlEncodedContentType);
+        }        
+        
         //set timeout for async request
         if (options.async && options.timeout > 0) {
             requestTimer = setTimeout(function () {
@@ -171,7 +209,8 @@ var Bee = Bee || {};
             }
         };
 
-        request.send();
+
+        request.send(serializedData);
         
         //call callback functions on request complete
         //for sync requests
