@@ -30,20 +30,20 @@ var Bee = Bee || {};
 (function (Bee) {
 
     //define variables
-    var RequestObject, //holds crossbrowser XMLHttpRequest object  
+    var CrossBrowserXhr, //object holds crossbrowser XMLHttpRequest object  
+        getCrossBrowserXhr, //method to get CrossBrowserXhr
         Xhr, // main class
         formatResponse, //function to format response
         mergeObjects, //function to merge objects
         serialize, //serialize an object {foo:'bar'} into foo&bar
         urlEncodedContentType = "application/x-www-form-urlencoded";
 
-
     //get crossbrowser request object 
-    RequestObject = (function () {
-        var crossBrowserXHR = XMLHttpRequest || undefined;
+    getCrossBrowserXhr = function () {
+        var xhr = XMLHttpRequest || undefined;
         //if IE
-        if (typeof crossBrowserXHR === "undefined") {
-            crossBrowserXHR = function () {
+        if (typeof xhr === "undefined") {
+            xhr = function () {
                 //IE 5 uses Msxml2.XMLHTTP
                 var userAgent = navigator.userAgent,
                     greaterThanIE5;
@@ -54,11 +54,12 @@ var Bee = Bee || {};
                 );
             };
         }
-        if (!crossBrowserXHR) {
+        if (!xhr) {
             throw "XMLHttpRequest not supported";
         }
-        return crossBrowserXHR;
-    }());
+        return xhr;
+    };
+
 
     //merge 2 objects
     //TODO: this should not be in XHR module
@@ -127,11 +128,9 @@ var Bee = Bee || {};
             onError : function (request, isTimedOut) {}
         };
 
-
         if (url) {
             this.send(url, options);
         }
-
 
         return this;
     };
@@ -147,6 +146,9 @@ var Bee = Bee || {};
             throw "Url should be set";
         }
 
+        //lazy init getting cross browser XHR
+        CrossBrowserXhr = CrossBrowserXhr || getCrossBrowserXhr();
+
         var that = this,
             request, //alias for that.request
             requestTimer, //timer to handle timeout,
@@ -158,7 +160,7 @@ var Bee = Bee || {};
         options = mergeObjects(that.options, options);
 
         //init XMLHttpRequest
-        that.request = request = new RequestObject();
+        that.request = request = new CrossBrowserXhr();
 
         if (options.data) {
             serializedData = serialize(options.data);
