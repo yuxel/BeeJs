@@ -36,7 +36,7 @@ var Bee = Bee || {};
         formatResponse, //function to format response
         mergeObjects, //function to merge objects
         serialize, //serialize an object {foo:'bar'} into foo&bar
-        urlEncodedContentType = "application/x-www-form-urlencoded";
+        postContentType;
 
     //get crossbrowser request object 
     getCrossBrowserXhr = function () {
@@ -113,12 +113,13 @@ var Bee = Bee || {};
         }
     };
 
+
     //Main XHR class
     Xhr = function (url, options) {
         this.request = undefined;
-
+        
         //default options
-        this.options = {
+        this.defaultOptions = {
             type : "GET",
             async : true,
             responseType : "text",
@@ -146,21 +147,20 @@ var Bee = Bee || {};
             throw "Url should be set";
         }
 
-        //lazy init getting cross browser XHR
-        CrossBrowserXhr = CrossBrowserXhr || getCrossBrowserXhr();
-
-        var that = this,
-            request, //alias for that.request
+        var self = this,
             requestTimer, //timer to handle timeout,
             onRequestComplete,
             serializedData,
-            timedOut  = false;
+            timedOut = false;
 
         //merged options from default options
-        options = mergeObjects(that.options, options);
+        options = mergeObjects(self.defaultOptions, options);
+
+        //lazy init getting cross browser XHR
+        CrossBrowserXhr = CrossBrowserXhr || getCrossBrowserXhr();
 
         //init XMLHttpRequest
-        that.request = request = new CrossBrowserXhr();
+        self.request = new CrossBrowserXhr();
 
         if (options.data) {
             serializedData = serialize(options.data);
@@ -171,18 +171,19 @@ var Bee = Bee || {};
             url += (url.search("\\?") === -1 ? "?" : "&") + serializedData;
         }
 
-        request.open(options.type, url, options.async);
+        self.request.open(options.type, url, options.async);
 
         if (options.data && options.type === "POST") {
             //set content type
-            request.setRequestHeader('Content-Type', urlEncodedContentType);
+            postContentType = "application/x-www-form-urlencoded";
+            self.request.setRequestHeader('Content-Type', postContentType);
         }        
         
         //set timeout for async request
         if (options.async && options.timeout > 0) {
             requestTimer = setTimeout(function () {
                 timedOut = true;
-                that.abort();
+                self.abort();
             }, options.timeout);
         }
 
@@ -191,33 +192,33 @@ var Bee = Bee || {};
         onRequestComplete = function (request) {
             clearTimeout(requestTimer);
 
-            if (request.status === 200) {
-                var data = formatResponse(request, options.responseType);
-                options.onSucess(data, request);
+            if (self.request.status === 200) {
+                var data = formatResponse(self.request, options.responseType);
+                options.onSucess(data, self.request);
             }
             else {
-                options.onError(request, false);
+                options.onError(self.request, false);
             }
 
         };
 
         //listen ready state change events for async requests
-        request.onreadystatechange = function () {
+        self.request.onreadystatechange = function () {
             if (timedOut) {
-                options.onError(request, true);
+                options.onError(self.request, true);
             }
-            else if (request.readyState === 4 && !timedOut) {
-                onRequestComplete(request);
+            else if (self.request.readyState === 4 && !timedOut) {
+                onRequestComplete(self.request);
             }
         };
 
 
-        request.send(serializedData);
+        self.request.send(serializedData);
         
         //call callback functions on request complete
         //for sync requests
         if (options.async === false) {
-            onRequestComplete(request);
+            onRequestComplete(self.request);
         }
     };
 
