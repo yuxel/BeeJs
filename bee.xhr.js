@@ -13,8 +13,8 @@
  *         timeout : 5000, //default is 10000
  *         data : {foo : "bar"},
  *         responseType : "json", //default is text
- *         onSucess : function(response){
- *             console.log('succes');
+ *         onSuccess : function(response){
+ *             console.log('success');
  *             console.log(response);
  *         },   
  *         onError : function(request, isTimedOut){
@@ -125,7 +125,7 @@ var Bee = Bee || {};
             responseType : "text",
             data : undefined,
             timeout : 10000, //10 seconds
-            onSucess : function (responseText, request) {},
+            onSuccess : function (responseText, request) {},
             onError : function (request, isTimedOut) {}
         };
 
@@ -194,7 +194,7 @@ var Bee = Bee || {};
 
             if (self.request.status === 200) {
                 var data = formatResponse(self.request, options.responseType);
-                options.onSucess(data, self.request);
+                options.onSuccess(data, self.request);
             }
             else {
                 options.onError(self.request, false);
